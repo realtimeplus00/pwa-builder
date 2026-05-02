@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PWA Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070f;
+  --card: #10101e;
+  --card2: #181828;
+  --accent: #7c3aed;
+  --accent2: #a78bfa;
+  --glow: #c4b5fd;
+  --green: #34d399;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --text: #f1f0ff;
+  --muted: #6b6b8a;
+  --border: #1e1e35;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+header {
+  padding: 36px 0 24px;
+  text-align: center;
+}
+
+.logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.logo-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--glow));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 24px rgba(124,58,237,0.4);
+}
+
+.logo-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px; font-weight: 700;
+  color: var(--text);
+}
+
+.tagline { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* GitHub 안내 카드 */
+.github-guide {
+  background: linear-gradient(135deg, rgba(36,41,47,0.8), rgba(30,30,53,0.8));
+  border: 1px solid rgba(88,166,255,0.25);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+
+.github-guide-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700;
+  color: #58a6ff;
+  margin-bottom: 12px;
+}
+
+.guide-steps { display: flex; flex-direction: column; gap: 8px; }
+
+.guide-step {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12px; color: var(--muted); line-height: 1.5;
+}
+
+.guide-n {
+  min-width: 20px; height: 20px;
+  background: rgba(88,166,255,0.15);
+  border: 1px solid rgba(88,166,255,0.3);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #58a6ff;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.guide-link {
+  color: #58a6ff; text-decoration: underline; cursor: pointer;
+  font-weight: 700;
+}
+
+/* Step card */
+.step-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--glow));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.step-card.active::before { opacity: 1; }
+.step-card.active {
+  border-color: rgba(124,58,237,0.4);
+  box-shadow: 0 0 30px rgba(124,58,237,0.1);
+}
+
+.step-card.done .step-badge {
+  background: rgba(52,211,153,0.15);
+  color: var(--green);
+  border-color: rgba(52,211,153,0.4);
+}
+
+.step-head {
+  display: flex; align-items: center;
+  gap: 12px; margin-bottom: 18px;
+}
+
+.step-badge {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--accent2); flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.step-card.active .step-badge {
+  background: var(--accent);
+  color: white; border-color: var(--accent);
+}
+
+.step-label { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.step-label small {
+  display: block; font-size: 11px; color: var(--muted);
+  font-weight: 300; margin-top: 2px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 32px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  background: var(--card2);
+}
+
+.drop-zone.dragover, .drop-zone:active {
+  border-color: var(--accent2);
+  background: rgba(124,58,237,0.08);
+}
+
+.drop-zone input[type=file] {
+  position: absolute; inset: 0;
+  opacity: 0; width: 100%; height: 100%;
+  cursor: pointer;
+}
+
+.drop-emoji { font-size: 36px; margin-bottom: 10px; }
+.drop-label { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.drop-label b { color: var(--accent2); }
+
+.file-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(52,211,153,0.1);
+  border: 1px solid rgba(52,211,153,0.3);
+  border-radius: 12px; padding: 12px 16px; font-size: 14px;
+}
+
+.file-chip-icon { font-size: 20px; }
+.file-chip-name { flex: 1; word-break: break-all; color: var(--green); font-weight: 700; }
+.file-chip-x { color: var(--muted); cursor: pointer; font-size: 18px; padding: 4px; line-height: 1; }
+
+/* Fields */
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block; font-size: 11px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 7px;
+  font-family: 'Space Mono', monospace;
+}
+
+.field label em {
+  font-style: normal; font-family: 'Noto Sans KR', sans-serif;
+  text-transform: none; letter-spacing: 0; color: #444468; font-size: 11px;
+}
+
+.field input, .field textarea {
+  width: 100%; background: var(--card2);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 13px 16px; color: var(--text); font-size: 15px;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+
+.field textarea { resize: none; height: 80px; font-size: 13px; line-height: 1.5; }
+
+.field input:focus, .field textarea:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); font-size: 13px; }
+.field-hint { font-size: 11px; color: var(--muted); margin-top: 5px; padding-left: 4px; }
+
+/* Password field */
+.pwd-wrap { position: relative; }
+.pwd-wrap input { padding-right: 50px; }
+.pwd-eye {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 18px; padding: 4px;
+  line-height: 1;
+}
+
+/* 저장 체크박스 */
+.save-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; cursor: pointer; user-select: none;
+  width: fit-content;
+}
+.save-check {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 2px solid var(--border); background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; font-size: 12px;
+}
+.save-check.checked {
+  background: var(--accent); border-color: var(--accent);
+}
+.save-label {
+  font-size: 12px; color: var(--muted);
+  transition: color 0.2s;
+}
+.save-row:hover .save-label { color: var(--accent2); }
+.save-row:hover .save-check { border-color: var(--accent2); }
+
+/* Token status */
+.token-status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; margin-top: 8px;
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--card2); border: 1px solid var(--border);
+}
+
+.token-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted); flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.token-dot.ok { background: var(--green); }
+.token-dot.err { background: var(--red); }
+.token-dot.checking {
+  background: var(--yellow);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Icon */
+.icon-row { display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: start; }
+
+.icon-box {
+  width: 80px; height: 80px; border-radius: 20px;
+  background: var(--card2); border: 2px dashed var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; overflow: hidden; position: relative; flex-shrink: 0;
+}
+
+.icon-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; display: none; }
+.icon-controls { display: flex; flex-direction: column; gap: 8px; }
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 16px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.2s; -webkit-appearance: none;
+}
+
+.btn-ghost { background: var(--card2); border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:active { opacity: 0.7; }
+
+.btn-ai { background: linear-gradient(135deg, #4f1d96, #6d28d9); color: white; }
+.btn-ai:active { opacity: 0.8; }
+.btn-ai:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #6d28d9); color: white;
+  font-size: 16px; padding: 16px; border-radius: 14px; width: 100%;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.35); letter-spacing: 0.3px;
+}
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.btn-github {
+  background: linear-gradient(135deg, #238636, #2ea043); color: white;
+  font-size: 16px; padding: 16px; border-radius: 14px; width: 100%;
+  box-shadow: 0 8px 32px rgba(46,160,67,0.35);
+}
+.btn-github:active { transform: scale(0.98); }
+.btn-github:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+/* Color picker */
+.color-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+input[type=color] {
+  width: 40px; height: 40px; border: 2px solid var(--border);
+  border-radius: 10px; background: none; cursor: pointer;
+  padding: 2px; -webkit-appearance: none;
+}
+
+.color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatch {
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: transform 0.2s, border-color 0.2s;
+}
+.swatch:active { transform: scale(1.2); }
+.swatch.sel { border-color: white; }
+
+/* Progress */
+.progress-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 20px;
+  margin-bottom: 14px; display: none;
+}
+.progress-card.show { display: block; }
+
+.prog-title {
+  font-family: 'Space Mono', monospace; font-size: 13px;
+  color: var(--accent2); margin-bottom: 14px;
+}
+
+.log-box {
+  background: #04040c; border-radius: 12px; padding: 14px;
+  font-family: 'Space Mono', monospace; font-size: 12px;
+  line-height: 2; max-height: 200px; overflow-y: auto; color: var(--muted);
+}
+
+.ll { animation: ll 0.25s ease; }
+.ll.ok { color: var(--green); }
+.ll.info { color: var(--accent2); }
+.ll.warn { color: var(--yellow); }
+.ll.err { color: var(--red); }
+
+@keyframes ll { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+
+.prog-bar-wrap { margin-top: 12px; height: 4px; background: var(--card2); border-radius: 4px; overflow: hidden; }
+.prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--glow)); border-radius: 4px; transition: width 0.4s ease; }
+
+/* Output */
+.output-card {
+  background: var(--card); border: 1px solid rgba(52,211,153,0.25);
+  border-radius: var(--radius); padding: 28px 20px;
+  margin-bottom: 14px; display: none; text-align: center;
+}
+.output-card.show { display: block; }
+
+.out-icon { font-size: 56px; margin-bottom: 10px; animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes pop { from { transform:scale(0);opacity:0; } to { transform:scale(1);opacity:1; } }
+
+.out-title { font-family: 'Space Mono', monospace; font-size: 20px; color: var(--green); margin-bottom: 6px; }
+.out-sub { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+
+.out-url {
+  font-size: 13px; color: #58a6ff; word-break: break-all;
+  background: var(--card2); border-radius: 10px; padding: 12px 14px;
+  margin: 14px 0; font-family: 'Space Mono', monospace;
+  cursor: pointer; border: 1px solid rgba(88,166,255,0.3);
+  text-align: left;
+}
+
+.install-steps {
+  text-align: left; background: var(--card2); border-radius: 14px;
+  padding: 18px; margin-top: 18px;
+}
+.inst-title { font-size: 13px; font-weight: 700; color: var(--accent2); margin-bottom: 12px; }
+.inst-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-bottom: 10px; font-size: 13px; color: var(--muted); line-height: 1.5;
+}
+.inst-n {
+  min-width: 22px; height: 22px; background: var(--accent); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px;
+}
+
+/* Preview */
+.preview-chip {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card2); border-radius: 14px; padding: 12px 16px; margin-bottom: 18px;
+}
+.preview-icon-box {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; background: var(--accent); flex-shrink: 0; overflow: hidden;
+}
+.preview-icon-box img { width:100%;height:100%;object-fit:cover;display:none;border-radius:10px; }
+.preview-info { flex: 1; min-width: 0; }
+.preview-name { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-pkg { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 50px; padding: 12px 22px; font-size: 13px;
+  font-weight: 700; z-index: 999; opacity: 0; transition: all 0.3s;
+  white-space: nowrap; max-width: 90vw;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.ok { border-color: rgba(52,211,153,0.5); color: var(--green); }
+.toast.err { border-color: rgba(248,113,113,0.5); color: var(--red); }
+
+.hidden { display: none !important; }
+
+.dots::after {
+  content: '';
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'}
+}
+
+.warn-box {
+  background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 12px; padding: 12px 14px; font-size: 12px; color: #fbbf24;
+  margin-bottom: 14px; line-height: 1.6;
+}
+</style>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="PWA Builder">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#059669">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+    window.addEventListener('beforeinstallprompt',e=>{
+      e.preventDefault();
+      window._pwaE=e;
+      var b=document.createElement('div');
+      b.style='position:fixed;bottom:0;left:0;right:0;background:#059669;color:#fff;padding:18px;text-align:center;z-index:9999;font-size:15px;font-weight:bold;cursor:pointer;font-family:sans-serif;';
+      b.innerHTML='📲 홈화면에 앱 추가하기 · Add to Home Screen';
+      b.onclick=async function(){window._pwaE.prompt();var r=await window._pwaE.userChoice;if(r.outcome==='accepted')b.remove();};
+      document.body.appendChild(b);
+    });
+  </script>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">PWA Builder</div>
+    </div>
+    <div class="tagline">
+      HTML → GitHub Pages → 핸드폰 앱 설치<br>
+      <small style="font-size:11px;color:#444468;">HTTPS 자동 배포 · 진짜 앱으로 설치 가능</small>
+    </div>
+  </header>
+
+  <!-- GitHub 토큰 안내 -->
+  <div class="github-guide">
+    <div class="github-guide-title">
+      <span>🐙</span> GitHub Token 발급 방법
+    </div>
+    <div class="guide-steps">
+      <div class="guide-step">
+        <div class="guide-n">1</div>
+        <div><span class="guide-link" onclick="window.open('https://github.com/settings/tokens/new?scopes=repo&description=PWA+Builder','_blank')">github.com → Settings → Tokens (classic)</span> 접속</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-n">2</div>
+        <div><b style="color:var(--text);">repo</b> 권한 체크 → Generate token 클릭</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-n">3</div>
+        <div>생성된 토큰 복사 → 아래 Step 0에 붙여넣기</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-n">4</div>
+        <div>GitHub 계정 없으면 <span class="guide-link" onclick="window.open('https://github.com/signup','_blank')">github.com/signup</span> 에서 무료 가입</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 0: GitHub 설정 ── -->
+  <div class="step-card active" id="s0">
+    <div class="step-head">
+      <div class="step-badge" id="b0">0</div>
+      <div class="step-label">GitHub 연결 <small>Token &amp; Repository</small></div>
+    </div>
+
+    <div class="field">
+      <label>GitHub 토큰 <em>· Personal Access Token</em></label>
+      <div class="pwd-wrap">
+        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+          oninput="onTokenChange()" autocomplete="off">
+        <button class="pwd-eye" onclick="togglePwd()" id="eyeBtn">👁</button>
+      </div>
+      <div class="save-row" id="saveTokenRow" onclick="toggleSaveToken()">
+        <div class="save-check" id="saveCheck"></div>
+        <span class="save-label" id="saveLabel">저장 (다음에도 자동입력)</span>
+      </div>
+      <div class="token-status" id="tokenStatus">
+        <div class="token-dot" id="tokenDot"></div>
+        <span id="tokenMsg">토큰을 입력하세요</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>GitHub 사용자명 <em>· Username</em></label>
+      <input type="text" id="ghUser" placeholder="your-github-username" oninput="syncRepo()">
+    </div>
+
+    <div class="field">
+      <label>저장소 이름 <em>· Repo name (자동생성됨)</em></label>
+      <input type="text" id="ghRepo" placeholder="my-pwa-app">
+      <div class="field-hint">영문·숫자·하이픈만 · 없으면 자동 생성</div>
+    </div>
+
+    <button class="btn btn-ghost" style="width:100%" onclick="verifyToken()">
+      🔍 토큰 확인하기 · Verify Token
+    </button>
+  </div>
+
+  <!-- ── STEP 1: HTML 파일 ── -->
+  <div class="step-card" id="s1">
+    <div class="step-head">
+      <div class="step-badge" id="b1">1</div>
+      <div class="step-label">HTML 파일 선택 <small>Select your HTML file</small></div>
+    </div>
+
+    <input type="file" accept=".html,.htm" id="htmlInput" onchange="onHtmlPick(this)" style="display:none">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('htmlInput').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="event.preventDefault();this.classList.remove('dragover');onHtmlDrop(event)">
+      <div class="drop-emoji">📂</div>
+      <div class="drop-label">
+        <b>여기를 탭하여 파일 선택</b><br>
+        Tap to browse · .html / .htm
+      </div>
+    </div>
+
+    <div class="file-chip hidden" id="fileChip">
+      <span class="file-chip-icon">✅</span>
+      <span class="file-chip-name" id="fileChipName"></span>
+      <span class="file-chip-x" onclick="clearHtml()">✕</span>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: 앱 이름 ── -->
+  <div class="step-card" id="s2">
+    <div class="step-head">
+      <div class="step-badge" id="b2">2</div>
+      <div class="step-label">앱 이름 설정 <small>App name &amp; package</small></div>
+    </div>
+
+    <div class="field">
+      <label>앱 이름 <em>· App Name</em></label>
+      <input type="text" id="appName" placeholder="나의 멋진 앱" oninput="syncPreview();syncRepo()">
+    </div>
+
+    <div class="field">
+      <label>짧은 이름 <em>· Short Name (홈화면 표시)</em></label>
+      <input type="text" id="shortName" placeholder="내앱" maxlength="12" oninput="syncPreview()">
+    </div>
+
+    <div class="field">
+      <label>테마 색상 <em>· Theme Color</em></label>
+      <div class="color-row">
+        <input type="color" id="themeColor" value="#7c3aed" oninput="syncPreview()">
+        <div class="color-swatches">
+          <div class="swatch sel" style="background:#7c3aed" onclick="setClr('#7c3aed',this)"></div>
+          <div class="swatch" style="background:#2563eb" onclick="setClr('#2563eb',this)"></div>
+          <div class="swatch" style="background:#059669" onclick="setClr('#059669',this)"></div>
+          <div class="swatch" style="background:#dc2626" onclick="setClr('#dc2626',this)"></div>
+          <div class="swatch" style="background:#d97706" onclick="setClr('#d97706',this)"></div>
+          <div class="swatch" style="background:#db2777" onclick="setClr('#db2777',this)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: 아이콘 ── -->
+  <div class="step-card" id="s3">
+    <div class="step-head">
+      <div class="step-badge" id="b3">3</div>
+      <div class="step-label">아이콘 설정 <small>App Icon (선택사항)</small></div>
+    </div>
+
+    <div class="icon-row">
+      <div class="icon-box" id="iconBox">
+        <span id="iconEmoji">📱</span>
+        <img id="iconImg" alt="icon">
+      </div>
+      <div class="icon-controls">
+        <button class="btn btn-ghost" onclick="document.getElementById('iconFileInput').click()">
+          📁 직접 업로드 · Upload
+        </button>
+        <input type="file" id="iconFileInput" accept="image/*" class="hidden" onchange="onIconPick(this)">
+        <button class="btn btn-ai" id="aiIconBtn" onclick="genAiIcon()">
+          ✨ AI 자동 생성
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="field">
+        <label>AI 아이콘 설명 <em>· Icon description</em></label>
+        <input type="text" id="iconPrompt" placeholder="예: 초록 나뭇잎, 빨간 카메라...">
+      </div>
+      <div class="field">
+        <label>Anthropic API Key <em>· AI 아이콘 생성용</em></label>
+        <div class="pwd-wrap">
+          <input type="password" id="anthropicKey" placeholder="sk-ant-xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+          <button class="pwd-eye" onclick="toggleAnthropicPwd()" id="anthropicEyeBtn">👁</button>
+        </div>
+        <div class="field-hint">🔗 <span class="guide-link" onclick="window.open('https://console.anthropic.com/settings/keys','_blank')">console.anthropic.com</span> 에서 무료 발급 · AI 아이콘 생성에만 사용</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: 빌드 & 배포 ── -->
+  <div class="step-card" id="s4">
+    <div class="step-head">
+      <div class="step-badge" id="b4">4</div>
+      <div class="step-label">GitHub 배포 & 앱 설치 <small>Deploy &amp; Install</small></div>
+    </div>
+
+    <div class="preview-chip">
+      <div class="preview-icon-box" id="prevIconBox">
+        <span id="prevEmoji">📱</span>
+        <img id="prevImg" alt="">
+      </div>
+      <div class="preview-info">
+        <div class="preview-name" id="prevName">나의 앱</div>
+        <div class="preview-pkg" id="prevRepo" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;">github.com/user/repo</div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      ⚠️ 첫 배포 후 GitHub Pages 활성화까지 <b>1~3분</b> 소요됩니다.<br>
+      URL이 뜨면 크롬으로 열고 → <b>메뉴 → 홈 화면에 추가</b>
+    </div>
+
+    <button class="btn btn-github" id="buildBtn" onclick="startBuild()">
+      🚀 GitHub Pages 배포 시작
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-card" id="progCard">
+    <div class="prog-title">⚙️ 배포 진행 중<span class="dots"></span></div>
+    <div class="log-box" id="logBox"></div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-card" id="outCard">
+    <div class="out-icon">🎉</div>
+    <div class="out-title">배포 완료!</div>
+    <div class="out-sub">아래 URL을 크롬으로 열어 홈화면에 추가하세요</div>
+
+    <div class="out-url" id="outUrl" onclick="copyUrl()">
+      배포 URL이 여기 표시됩니다
+    </div>
+
+    <button class="btn" style="background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;font-size:15px;padding:15px;border-radius:14px;width:100%;box-shadow:0 8px 24px rgba(59,130,246,0.3);" onclick="openUrl()">
+      📱 크롬으로 열기 · Open in Chrome
+    </button>
+
+    <div class="install-steps">
+      <div class="inst-title">📲 앱 설치 방법 · How to install</div>
+      <div class="inst-row">
+        <div class="inst-n">1</div>
+        <div>위 버튼 → 크롬에서 URL 열기<br><small>배포 후 1~3분 기다렸다가 열기</small></div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-n">2</div>
+        <div>크롬 <b style="color:var(--accent2);">점 3개(⋮) 메뉴</b> 탭</div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-n">3</div>
+        <div><b style="color:var(--green);">"홈 화면에 추가"</b> 또는 <b style="color:var(--green);">"앱 설치"</b> 탭</div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-n">4</div>
+        <div>홈화면에 아이콘 등장 → 앱처럼 실행! 🚀</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="copyUrl()">📋 URL 복사</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="resetAll()">🔄 처음부터</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────
+const S = {
+  htmlContent: '',
+  htmlName: '',
+  iconDataUrl: null,
+  iconSvg: null,
+  deployUrl: null,
+  ghVerified: false,
+  ghUsername: '',
+};
+
+// ─── Token ───────────────────────────────
+function togglePwd() {
+  const inp = document.getElementById('ghToken');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ─── 토큰 저장 체크박스 ───────────────────
+let saveTokenChecked = false;
+
+function toggleSaveToken() {
+  saveTokenChecked = !saveTokenChecked;
+  const check = document.getElementById('saveCheck');
+  const label = document.getElementById('saveLabel');
+  if (saveTokenChecked) {
+    check.classList.add('checked');
+    check.textContent = '✓';
+    label.textContent = '저장됨 · 다음 방문 시 자동입력';
+    label.style.color = 'var(--green)';
+    const token = document.getElementById('ghToken').value.trim();
+    if (token) { localStorage.setItem('pwa_gh_token', token); toast('✅ 토큰 저장 완료', 'ok'); }
+    else { toast('토큰을 먼저 입력하세요', 'err'); saveTokenChecked = false; check.classList.remove('checked'); check.textContent = ''; label.textContent = '저장 (다음에도 자동입력)'; label.style.color = ''; }
+  } else {
+    check.classList.remove('checked');
+    check.textContent = '';
+    label.textContent = '저장 (다음에도 자동입력)';
+    label.style.color = '';
+    localStorage.removeItem('pwa_gh_token');
+    toast('토큰 저장 해제', 'ok');
+  }
+}
+
+function loadSavedToken() {
+  const saved = localStorage.getItem('pwa_gh_token');
+  if (saved) {
+    document.getElementById('ghToken').value = saved;
+    saveTokenChecked = true;
+    const check = document.getElementById('saveCheck');
+    const label = document.getElementById('saveLabel');
+    check.classList.add('checked');
+    check.textContent = '✓';
+    label.textContent = '저장됨 · 다음 방문 시 자동입력';
+    label.style.color = 'var(--green)';
+    setTokenStatus('', 'var(--muted)', '저장된 토큰 불러옴 · 확인하기를 눌러주세요');
+  }
+}
+
+function onTokenChange() {
+  S.ghVerified = false;
+  setTokenStatus('', 'var(--muted)', '토큰을 입력 후 확인하세요');
+  // 저장 체크된 상태면 실시간으로 갱신
+  if (saveTokenChecked) {
+    const token = document.getElementById('ghToken').value.trim();
+    if (token) localStorage.setItem('pwa_gh_token', token);
+    else localStorage.removeItem('pwa_gh_token');
+  }
+  syncRepo();
+}
+
+function setTokenStatus(dotClass, color, msg) {
+  const dot = document.getElementById('tokenDot');
+  const txt = document.getElementById('tokenMsg');
+  dot.className = 'token-dot ' + dotClass;
+  txt.textContent = msg;
+  txt.style.color = color;
+}
+
+async function verifyToken() {
+  const token = document.getElementById('ghToken').value.trim();
+  if (!token) { toast('토큰을 입력하세요', 'err'); return; }
+
+  setTokenStatus('checking', 'var(--yellow)', '확인 중...');
+
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!res.ok) throw new Error('Invalid token');
+
+    const data = await res.json();
+    S.ghVerified = true;
+    S.ghUsername = data.login;
+
+    if (!document.getElementById('ghUser').value)
+      document.getElementById('ghUser').value = data.login;
+
+    setTokenStatus('ok', 'var(--green)', '✅ ' + data.login + ' 로그인 완료');
+    document.getElementById('s0').classList.add('done');
+    document.getElementById('b0').textContent = '✓';
+    syncRepo();
+    toast('✅ GitHub 연결 완료!', 'ok');
+  } catch(e) {
+    setTokenStatus('err', 'var(--red)', '❌ 토큰이 올바르지 않습니다');
+    S.ghVerified = false;
+    toast('토큰 오류 · 다시 확인하세요', 'err');
+  }
+}
+
+function syncRepo() {
+  const user = document.getElementById('ghUser').value.trim() || 'username';
+  const appName = document.getElementById('appName').value.trim();
+  let repo = document.getElementById('ghRepo').value.trim();
+
+  if (!repo && appName) {
+    repo = appName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    document.getElementById('ghRepo').value = repo;
+  }
+
+  const repoName = repo || 'my-pwa-app';
+  document.getElementById('prevRepo').textContent = `github.com/${user}/${repoName}`;
+}
+
+// ─── HTML File ───────────────────────────
+function onHtmlDrop(event) {
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  if (!file.name.match(/\.html?$/i)) { toast('HTML 파일만 선택하세요', 'err'); return; }
+  readHtmlFile(file);
+}
+
+function onHtmlPick(input) {
+  const file = input.files[0];
+  if (!file) return;
+  readHtmlFile(file);
+}
+
+function readHtmlFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.htmlContent = e.target.result;
+    S.htmlName = file.name;
+    document.getElementById('dropZone').classList.add('hidden');
+    document.getElementById('fileChip').classList.remove('hidden');
+    document.getElementById('fileChipName').textContent = file.name;
+    document.getElementById('s1').classList.add('done');
+    document.getElementById('b1').textContent = '✓';
+
+    const m = S.htmlContent.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (m) {
+      const t = m[1].trim();
+      if (!document.getElementById('appName').value) {
+        document.getElementById('appName').value = t;
+        document.getElementById('shortName').value = t.slice(0, 12);
+        syncPreview(); syncRepo();
+      }
+    }
+    toast('✅ HTML 파일 선택 완료', 'ok');
+  };
+  reader.onerror = () => toast('파일 읽기 실패', 'err');
+  reader.readAsText(file);
+}
+
+function clearHtml() {
+  S.htmlContent = ''; S.htmlName = '';
+  document.getElementById('htmlInput').value = '';
+  document.getElementById('dropZone').classList.remove('hidden');
+  document.getElementById('fileChip').classList.add('hidden');
+  document.getElementById('s1').classList.remove('done');
+  document.getElementById('b1').textContent = '1';
+}
+
+// ─── Icon ─────────────────────────────────
+function onIconPick(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { setIcon(e.target.result, null); toast('✅ 아이콘 업로드 완료', 'ok'); };
+  reader.readAsDataURL(file);
+}
+
+function setIcon(dataUrl, svg) {
+  S.iconDataUrl = dataUrl; S.iconSvg = svg;
+  document.getElementById('iconEmoji').style.display = 'none';
+  const img = document.getElementById('iconImg');
+  img.src = dataUrl; img.style.display = 'block';
+  document.getElementById('prevEmoji').style.display = 'none';
+  const pi = document.getElementById('prevImg');
+  pi.src = dataUrl; pi.style.display = 'block';
+  document.getElementById('prevIconBox').style.background = 'transparent';
+  document.getElementById('s3').classList.add('done');
+  document.getElementById('b3').textContent = '✓';
+}
+
+// ─── AI Icon ─────────────────────────────
+async function genAiIcon() {
+  const prompt = document.getElementById('iconPrompt').value.trim() ||
+                 document.getElementById('appName').value.trim() ||
+                 'colorful modern app icon';
+  const btn = document.getElementById('aiIconBtn');
+  btn.disabled = true; btn.textContent = '⏳ 생성 중...';
+
+  try {
+    const svg = await callClaudeForSvg(
+      `Create a modern, colorful, beautiful SVG app icon for: "${prompt}".
+Rules:
+- viewBox="0 0 512 512", width=512, height=512
+- Rounded rect background with vivid gradient
+- Clear symbolic icon in center
+- Return ONLY SVG code from <svg to </svg>, no markdown, no explanation`,
+      'You are an expert SVG icon designer. Return ONLY valid SVG code, nothing else.'
+    );
+
+    if (svg) {
+      const b64 = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      setIcon(b64, svg);
+      toast('✨ AI 아이콘 생성 완료!', 'ok');
+    } else {
+      toast('생성 실패 · 설명을 더 구체적으로', 'err');
+    }
+  } catch(e) {
+    toast('오류: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ AI 자동 생성';
+}
+
+async function callClaudeForSvg(userMsg, systemMsg) {
+  const apiKey = document.getElementById('anthropicKey').value.trim();
+  if (!apiKey) throw new Error('Anthropic API Key를 입력하세요');
+  if (!apiKey.startsWith('sk-ant-')) throw new Error('API Key 형식이 올바르지 않습니다 (sk-ant-...)');
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system: systemMsg,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`API ${res.status}: ${err.error?.message || '인증 실패'}`);
+  }
+  const data = await res.json();
+  const text = (data.content || []).map(b => b.text || '').join('');
+  const stripped = text.replace(/```[\w]*\n?/g, '').trim();
+  const m = stripped.match(/<svg[\s\S]*?<\/svg>/i);
+  return m ? m[0] : null;
+}
+
+function toggleAnthropicPwd() {
+  const inp = document.getElementById('anthropicKey');
+  const btn = document.getElementById('anthropicEyeBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ─── Preview ─────────────────────────────
+function syncPreview() {
+  const name = document.getElementById('appName').value || '나의 앱';
+  const color = document.getElementById('themeColor').value;
+  document.getElementById('prevName').textContent = name;
+  if (!S.iconDataUrl) document.getElementById('prevIconBox').style.background = color;
+}
+
+function setClr(c, el) {
+  document.getElementById('themeColor').value = c;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel'); syncPreview();
+}
+
+// ─── Build & GitHub Pages Deploy ─────────
+async function startBuild() {
+  const token = document.getElementById('ghToken').value.trim();
+  const ghUser = document.getElementById('ghUser').value.trim();
+  const appName = document.getElementById('appName').value.trim();
+  const shortName = document.getElementById('shortName').value.trim() || appName.slice(0, 12);
+  const themeColor = document.getElementById('themeColor').value;
+  let repoName = document.getElementById('ghRepo').value.trim();
+
+  if (!token) { toast('GitHub 토큰을 입력하세요', 'err'); return; }
+  if (!S.ghVerified) { toast('토큰 확인하기를 먼저 눌러주세요', 'err'); return; }
+  if (!S.htmlContent) { toast('HTML 파일을 먼저 선택하세요', 'err'); return; }
+  if (!appName) { toast('앱 이름을 입력하세요', 'err'); return; }
+  if (!ghUser) { toast('GitHub 사용자명을 입력하세요', 'err'); return; }
+
+  if (!repoName) {
+    repoName = appName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'my-pwa-app';
+    document.getElementById('ghRepo').value = repoName;
+  }
+
+  document.getElementById('buildBtn').disabled = true;
+  document.getElementById('progCard').classList.add('show');
+  document.getElementById('logBox').innerHTML = '';
+  setProgress(0);
+
+  const log = (msg, cls = '') => {
+    const el = document.getElementById('logBox');
+    const d = document.createElement('div');
+    d.className = 'll ' + cls;
+    d.textContent = '▸ ' + msg;
+    el.appendChild(d);
+    el.scrollTop = el.scrollHeight;
+  };
+
+  const headers = {
+    'Authorization': 'token ' + token,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    log('GitHub 연결 확인 중...', 'info');
+    setProgress(5);
+    await wait(200);
+
+    // ── 1. 저장소 생성 또는 확인 ──
+    log(`저장소 확인 중: ${ghUser}/${repoName}`, 'info');
+    setProgress(10);
+
+    let repoExists = false;
+    const checkRes = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}`, { headers });
+    if (checkRes.ok) {
+      repoExists = true;
+      log(`저장소 존재 · 재사용: ${repoName}`, 'ok');
+    } else {
+      log(`새 저장소 생성: ${repoName}`, 'info');
+      const createRes = await fetch('https://api.github.com/user/repos', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          name: repoName,
+          description: appName + ' - PWA App',
+          private: false,
+          auto_init: true
+        })
+      });
+      if (!createRes.ok) {
+        const err = await createRes.json();
+        throw new Error('저장소 생성 실패: ' + (err.message || createRes.status));
+      }
+      log(`저장소 생성 완료: ${repoName}`, 'ok');
+      await wait(2000);
+    }
+    setProgress(20);
+
+    // ── 2. gh-pages 브랜치 준비 ──
+    log('gh-pages 브랜치 준비 중...', 'info');
+
+    // main 브랜치의 최신 커밋 SHA 가져오기
+    const mainRef = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/git/ref/heads/main`, { headers });
+    if (!mainRef.ok) {
+      // main이 없으면 master 시도
+      const masterRef = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/git/ref/heads/master`, { headers });
+      if (!masterRef.ok) throw new Error('기본 브랜치를 찾을 수 없습니다');
+    }
+    const mainData = mainRef.ok
+      ? await mainRef.json()
+      : await (await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/git/ref/heads/master`, { headers })).json();
+    const mainSha = mainData.object.sha;
+
+    // gh-pages 브랜치 존재 확인
+    const gpCheck = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/git/ref/heads/gh-pages`, { headers });
+    if (!gpCheck.ok) {
+      // gh-pages 브랜치 생성
+      const gpCreate = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/git/refs`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ ref: 'refs/heads/gh-pages', sha: mainSha })
+      });
+      if (!gpCreate.ok) {
+        const err = await gpCreate.json();
+        throw new Error('gh-pages 브랜치 생성 실패: ' + (err.message || gpCreate.status));
+      }
+      log('gh-pages 브랜치 생성 완료', 'ok');
+      await wait(800);
+    } else {
+      log('gh-pages 브랜치 존재 · 재사용', 'ok');
+    }
+    setProgress(25);
+
+    // ── 3. 파일 준비 ──
+    log('PWA 파일 생성 중...', 'info');
+
+    const manifest = {
+      name: appName,
+      short_name: shortName,
+      start_url: './',
+      scope: './',
+      display: 'standalone',
+      background_color: '#ffffff',
+      theme_color: themeColor,
+      orientation: 'portrait-primary',
+      icons: [
+        { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+
+    const cacheName = repoName.replace(/-/g, '_') + '_v1';
+    const sw = `const CACHE='${cacheName}';
+const ASSETS=['./','.//index.html','./manifest.json'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)).catch(()=>caches.match('./index.html'))));`;
+
+    const pwaMeta = `
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="${appName}">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="${themeColor}">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+    window.addEventListener('beforeinstallprompt',e=>{
+      e.preventDefault();
+      window._pwaE=e;
+      var b=document.createElement('div');
+      b.style='position:fixed;bottom:0;left:0;right:0;background:${themeColor};color:#fff;padding:18px;text-align:center;z-index:9999;font-size:15px;font-weight:bold;cursor:pointer;font-family:sans-serif;';
+      b.innerHTML='📲 홈화면에 앱 추가하기 · Add to Home Screen';
+      b.onclick=async function(){window._pwaE.prompt();var r=await window._pwaE.userChoice;if(r.outcome==='accepted')b.remove();};
+      document.body.appendChild(b);
+    });
+  <\/script>`;
+
+    let finalHtml = S.htmlContent.includes('</head>')
+      ? S.htmlContent.replace('</head>', pwaMeta + '\n</head>')
+      : pwaMeta + S.htmlContent;
+
+    log('manifest.json, service-worker.js 생성 완료', 'ok');
+    setProgress(40);
+
+    // ── 3. 아이콘 PNG 생성 ──
+    log('아이콘 생성 중...', 'info');
+    let icon192b64, icon512b64;
+
+    if (S.iconDataUrl) {
+      try {
+        const png192 = await toPng(S.iconDataUrl, 192);
+        const png512 = await toPng(S.iconDataUrl, 512);
+        icon192b64 = png192.split(',')[1];
+        icon512b64 = png512.split(',')[1];
+        log('아이콘 PNG 변환 완료', 'ok');
+      } catch(e) {
+        const ph = await generatePlaceholder(themeColor, shortName.slice(0,2));
+        icon192b64 = ph.split(',')[1];
+        icon512b64 = ph.split(',')[1];
+        log('기본 아이콘 사용', 'warn');
+      }
+    } else {
+      const ph = await generatePlaceholder(themeColor, shortName.slice(0,2));
+      icon192b64 = ph.split(',')[1];
+      icon512b64 = ph.split(',')[1];
+      log('자동 생성 아이콘 사용', 'ok');
+    }
+    setProgress(55);
+
+    // ── 4. GitHub에 파일 업로드 ──
+    log('GitHub에 파일 업로드 중...', 'info');
+
+    const uploadFile = async (path, content, isBase64 = false) => {
+      const b64 = isBase64 ? content : btoa(unescape(encodeURIComponent(content)));
+
+      // 기존 파일 SHA 확인 (gh-pages 브랜치에서)
+      let sha = undefined;
+      const existRes = await fetch(
+        `https://api.github.com/repos/${ghUser}/${repoName}/contents/${path}?ref=gh-pages`,
+        { headers }
+      );
+      if (existRes.ok) {
+        const existData = await existRes.json();
+        sha = existData.sha;
+      }
+
+      const body = {
+        message: `PWA Builder: update ${path}`,
+        content: b64,
+        branch: 'gh-pages'
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/contents/${path}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(`업로드 실패 (${path}): ` + (err.message || res.status));
+      }
+    };
+
+    await uploadFile('index.html', finalHtml);
+    log('index.html 업로드 완료', 'ok');
+    setProgress(60);
+
+    await uploadFile('manifest.json', JSON.stringify(manifest, null, 2));
+    log('manifest.json 업로드 완료', 'ok');
+    setProgress(65);
+
+    await uploadFile('service-worker.js', sw);
+    log('service-worker.js 업로드 완료', 'ok');
+    setProgress(70);
+
+    await uploadFile('icons/icon-192.png', icon192b64, true);
+    await uploadFile('icons/icon-512.png', icon512b64, true);
+    log('아이콘 파일 업로드 완료', 'ok');
+    setProgress(80);
+
+    // ── 5. GitHub Pages 활성화 ──
+    log('GitHub Pages 활성화 중...', 'info');
+
+    const pagesRes = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/pages`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ source: { branch: 'gh-pages', path: '/' } })
+    });
+
+    if (!pagesRes.ok && pagesRes.status !== 409 && pagesRes.status !== 422) {
+      // 이미 활성화된 경우 PUT으로 업데이트 시도
+      const pagesUpdate = await fetch(`https://api.github.com/repos/${ghUser}/${repoName}/pages`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ source: { branch: 'gh-pages', path: '/' } })
+      });
+      if (!pagesUpdate.ok) {
+        const err = await pagesRes.json().catch(() => ({}));
+        log('Pages 활성화 주의: ' + (err.message || pagesRes.status), 'warn');
+      } else {
+        log('GitHub Pages 브랜치 업데이트 완료', 'ok');
+      }
+    } else {
+      log('GitHub Pages 활성화 완료 (gh-pages 브랜치)', 'ok');
+    }
+    setProgress(90);
+
+    await wait(1500);
+
+    // ── 6. 결과 URL ──
+    const pagesUrl = `https://${ghUser}.github.io/${repoName}/`;
+    setProgress(100);
+    log('✅ 배포 완료!', 'ok');
+    log('🌐 ' + pagesUrl, 'ok');
+    log('⏱ 1~3분 후 URL이 활성화됩니다', 'warn');
+
+    S.deployUrl = pagesUrl;
+    document.getElementById('outUrl').textContent = pagesUrl;
+    document.getElementById('outCard').classList.add('show');
+    document.getElementById('outCard').scrollIntoView({ behavior: 'smooth' });
+    toast('🎉 GitHub Pages 배포 완료!', 'ok');
+
+  } catch(e) {
+    log('❌ 오류: ' + e.message, 'err');
+    toast('배포 실패: ' + e.message.slice(0, 40), 'err');
+    document.getElementById('buildBtn').disabled = false;
+  }
+}
+
+// ─── Canvas helpers ───────────────────────
+function toPng(src, size) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    const draw = () => {
+      const r = size * 0.22;
+      ctx.beginPath();
+      ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+      ctx.quadraticCurveTo(size,0,size,r);
+      ctx.lineTo(size,size-r);
+      ctx.quadraticCurveTo(size,size,size-r,size);
+      ctx.lineTo(r,size);
+      ctx.quadraticCurveTo(0,size,0,size-r);
+      ctx.lineTo(0,r);
+      ctx.quadraticCurveTo(0,0,r,0);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img,0,0,size,size);
+      resolve(canvas.toDataURL('image/png'));
+    };
+
+    img.onerror = reject;
+
+    if (src.startsWith('data:image/svg+xml')) {
+      const svgStr = decodeURIComponent(src.split(',')[1]);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      img.onload = () => { draw(); URL.revokeObjectURL(url); };
+      img.src = url;
+    } else {
+      img.onload = draw;
+      img.crossOrigin = 'anonymous';
+      img.src = src;
+    }
+  });
+}
+
+function generatePlaceholder(color, text) {
+  return new Promise(resolve => {
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0,0,size,size);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, shiftColor(color, -50));
+
+    const r = 110;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+    ctx.quadraticCurveTo(size,0,size,r);
+    ctx.lineTo(size,size-r);
+    ctx.quadraticCurveTo(size,size,size-r,size);
+    ctx.lineTo(r,size);
+    ctx.quadraticCurveTo(0,size,0,size-r);
+    ctx.lineTo(0,r);
+    ctx.quadraticCurveTo(0,0,r,0);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = 'bold 210px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((text || '앱').slice(0,2), 256, 270);
+
+    resolve(canvas.toDataURL('image/png'));
+  });
+}
+
+function shiftColor(hex, amount) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const clamp = v => Math.max(0, Math.min(255, v));
+  const r = clamp((n >> 16) + amount);
+  const g = clamp(((n >> 8) & 0xff) + amount);
+  const b = clamp((n & 0xff) + amount);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6,'0');
+}
+
+// ─── Helpers ─────────────────────────────
+function setProgress(p) { document.getElementById('progBar').style.width = p + '%'; }
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function copyUrl() {
+  if (!S.deployUrl) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(S.deployUrl).then(() => toast('URL 복사됨!', 'ok'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = S.deployUrl;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('URL 복사됨!', 'ok');
+  }
+}
+
+function openUrl() {
+  if (!S.deployUrl) window.open('https://github.com', '_blank');
+  else window.open(S.deployUrl, '_blank');
+}
+
+function resetAll() {
+  Object.assign(S, { htmlContent:'', htmlName:'', iconDataUrl:null, iconSvg:null, deployUrl:null });
+  ['appName','shortName','iconPrompt'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('themeColor').value = '#7c3aed';
+  document.getElementById('htmlInput').value = '';
+  document.getElementById('iconFileInput').value = '';
+  document.getElementById('dropZone').classList.remove('hidden');
+  document.getElementById('fileChip').classList.add('hidden');
+  document.getElementById('iconEmoji').style.display = '';
+  document.getElementById('iconImg').style.display = 'none';
+  document.getElementById('iconImg').src = '';
+  document.getElementById('prevEmoji').style.display = '';
+  document.getElementById('prevImg').style.display = 'none';
+  document.getElementById('prevImg').src = '';
+  document.getElementById('prevIconBox').style.background = 'var(--accent)';
+  document.getElementById('progCard').classList.remove('show');
+  document.getElementById('outCard').classList.remove('show');
+  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('buildBtn').disabled = false;
+  ['s1','s2','s3','s4'].forEach((id,i) => {
+    document.getElementById(id).classList.remove('done','active');
+    document.getElementById('b'+(i+1)).textContent = (i+1);
+  });
+  document.getElementById('s1').classList.add('active');
+  document.querySelectorAll('.swatch').forEach((s,i) => s.classList.toggle('sel', i===0));
+  syncPreview();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+syncPreview();
+loadSavedToken();
+</script>
+</body>
+</html>
